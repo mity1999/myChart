@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>cahrt.js Regression Line</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.js"></script>
+</head>
+<body>
+<!-- グラフ描画エリア設定 -->
+<div style="width:100%">
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+// 散布図データ
+var sample = [
+  {x:1, y:4},{x:2, y:3},{x:3, y:4},{x:4, y:5},{x:5, y:6},{x:6, y:5},{x:7, y:7},{x:8, y:6},{x:9, y:8},{x:10, y:7}
+];
+
+
+// 回帰直線の傾きと切片を求める
+var sx = 0;
+var sy = 0;
+var sxy = 0;
+var sxsq = 0;
+var xmean;
+var ymean;
+var alpha;
+var beta;
+var n;
+
+sample.forEach(function(val) {
+  sx += val.x;
+  sy += val.y;
+  sxy += val.x * val.y;
+  sxsq += Math.pow(val.x,2);
+});
+
+n = sample.length;
+xmean = sx/n;
+ymean = sy/n;
+beta  = ((n*sxy) - (sx*sy))/((n*sxsq)-(Math.pow(sx,2))); // 傾き
+alpha = ymean - (beta * xmean); // 切片
+
+
+// 回帰式より、回帰直線描画用データを作成
+var regressionLinePlot = [];
+sample.forEach(function(val) {
+  regressionLinePlot.push({'x': val.x, 'y': alpha + beta*val.x});
+});
+
+
+// 散布図と回帰直線を描画
+window.onload = function() {
+  var ctx = document.getElementById("canvas").getContext("2d");
+  window.myChart = new Chart(ctx, {
+    type: 'scatter',
+    data: plotData,
+  });
+};
+
+
+// 描画データ
+var plotData = {
+  datasets: [
+    { // 散布図
+      type: 'scatter',
+      label: 'Data',
+      data: sample,
+      borderColor : 'rgba(100,120,255,1)',            // プロットの線の色
+      backgroundColor: 'rgba(130,160,255,1)',         // 凡例の背景色
+      pointBackgroundColor: 'rgba(100,120,255,1)',    // 点の色
+      fill: false,                                    // 線とＸ軸で囲まれた範囲の描画
+      pointRadius: 5.5
+    },
+    { // 回帰直線
+      type: 'scatter',
+      label: 'Regression Line',
+      data: regressionLinePlot,              // 始点と終点のデータ（座標）
+      borderColor : 'rgb(0,128,0,1)',     // 線の色
+      backgroundColor: 'rgba(34,139,34,1)',  // 凡例の背景色
+      borderWidth : 5,                       // 線幅
+      pointRadius: 0.5,                      // 点の形状の半径（0にすると点を描画しない）
+      tension: 0,                            // 線を直線にする
+      showLine: true,                        // 線を描画
+      fill: false                            // 線とＸ軸で囲まれた範囲の描画
+    }
+  ],
+};
+</script>
+</body>
+</html>
